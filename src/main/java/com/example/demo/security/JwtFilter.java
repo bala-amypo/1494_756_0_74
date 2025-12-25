@@ -24,13 +24,14 @@ public class JwtFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
     }
 
-    // ✅ VERY IMPORTANT: Skip JWT check for auth & swagger
+    // ✅ SAFEST way to skip JWT for auth & swagger
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
-        return path.startsWith("/auth")
-                || path.startsWith("/swagger-ui")
-                || path.startsWith("/v3/api-docs");
+        String uri = request.getRequestURI();
+
+        return uri.contains("/auth")
+                || uri.contains("/swagger-ui")
+                || uri.contains("/v3/api-docs");
     }
 
     @Override
@@ -41,26 +42,30 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String header = request.getHeader("Authorization");
 
-        if (header != null && header.startsWith("Bearer ")) {
+        // ✅ If no token → just continue (DO NOT BLOCK)
+        if (header == null || !header.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        try {
             String token = header.substring(7);
+            Jws<Claims> claims = jwtUtil.validateToken(token);
 
-            try {
-                Jws<Claims> claims = jwtUtil.validateToken(token);
-                String email = claims.getBody().get("email", String.class);
-                String role = claims.getBody().get("role", String.class);
+            String email = claims.getBody().get("email", String.class);
+            String role = claims.getBody().get("role", String.class);
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                email,
-                                null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                        );
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            email,
+                            null,
+                            List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                    );
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            } catch (Exception e) {
-                SecurityContextHolder.clearContext();
-            }
+        } catch (Exception e) {
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);
