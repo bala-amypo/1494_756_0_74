@@ -3,7 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.entity.Vehicle;
 import com.example.demo.service.VehicleService;
 import org.springframework.web.bind.annotation.*;
-demo/src/main/java/com/example/demo/config
+
 import java.util.List;
 
 @RestController
