@@ -3,6 +3,7 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "locations")
 public class Location {
 
     @Id
@@ -15,35 +16,13 @@ public class Location {
 
     public Location() {}
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Double getLatitude() {
-        return latitude;
-    }
-
-    public Double getLongitude() {
-        return longitude;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
+    public Location(String name, Double latitude, Double longitude) {
         this.name = name;
-    }
-
-    public void setLatitude(Double latitude) {
         this.latitude = latitude;
-    }
-
-    public void setLongitude(Double longitude) {
         this.longitude = longitude;
     }
+
+    public Long getId() { return id; }
+    public Double getLatitude() { return latitude; }
+    public Double getLongitude() { return longitude; }
 }
