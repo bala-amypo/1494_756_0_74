@@ -29,20 +29,22 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-            // Disable CSRF for APIs
             .csrf(csrf -> csrf.disable())
 
-            // Authorization rules
             .authorizeHttpRequests(auth -> auth
+                // ✅ PUBLIC endpoints
                 .requestMatchers(
+                        "/auth/register",
+                        "/auth/login",
                         "/auth/**",
                         "/swagger-ui/**",
                         "/v3/api-docs/**"
                 ).permitAll()
+
+                // 🔐 Everything else needs JWT
                 .anyRequest().authenticated()
             )
 
-            // Add JWT filter
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
